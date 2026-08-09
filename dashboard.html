@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>陽光富利 | 獲客數據 Dashboard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Microsoft JhengHei', Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+.container { max-width: 1200px; margin: 0 auto; }
+.header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 12px; margin-bottom: 20px; }
+.header h1 { font-size: 28px; margin-bottom: 10px; }
+.header p { opacity: 0.9; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
+.card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.card h3 { color: #666; font-size: 14px; margin-bottom: 10px; }
+.card .value { font-size: 32px; font-weight: bold; color: #667eea; }
+.card .label { font-size: 12px; color: #999; margin-top: 5px; }
+.table-container { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.table-container h2 { margin-bottom: 15px; color: #333; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+th { background: #f8f9fa; font-weight: bold; color: #666; font-size: 14px; }
+td { color: #333; font-size: 14px; }
+tr:hover { background: #f8f9fa; }
+.badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+.badge.success { background: #d4edda; color: #155724; }
+.badge.info { background: #d1ecf1; color: #0c5460; }
+.badge.warning { background: #fff3cd; color: #856404; }
+.footer { text-align: center; padding: 20px; color: #999; font-size: 12px; }
+.refresh-btn { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 15px; }
+.refresh-btn:hover { background: #764ba2; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>📊 陽光富利 獲客系統 Dashboard</h1>
+    <p>即時追蹤流量來源、轉換數據與用戶行為</p>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <h3>總訪客數</h3>
+      <div class="value" id="totalVisits">-</div>
+      <div class="label">所有来源</div>
+    </div>
+    <div class="card">
+      <h3>今日訪客</h3>
+      <div class="value" id="todayVisits">-</div>
+      <div class="label">過去 24 小時</div>
+    </div>
+    <div class="card">
+      <h3>健康興趣</h3>
+      <div class="value" id="healthVisits">-</div>
+      <div class="label">標籤分類</div>
+    </div>
+    <div class="card">
+      <h3>創業興趣</h3>
+      <div class="value" id="businessVisits">-</div>
+      <div class="label">標籤分類</div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <button class="refresh-btn" onclick="loadStats()">🔄 重新整理</button>
+    <h2>流量來源明細</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>事件</th>
+          <th>來源</th>
+          <th>媒介</th>
+          <th>次數</th>
+          <th>狀態</th>
+        </tr>
+      </thead>
+      <tbody id="statsTable">
+        <tr><td colspan="5" style="text-align: center; color: #999;">載入中...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-container" style="margin-top: 20px;">
+    <h2>最近追蹤記錄</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>時間</th>
+          <th>事件</th>
+          <th>來源</th>
+          <th>媒介</th>
+          <th>用戶標籤</th>
+          <th>國家</th>
+        </tr>
+      </thead>
+      <tbody id="recentTable">
+        <tr><td colspan="6" style="text-align: center; color: #999;">載入中...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <p>陽光富利獲客系統 Dashboard v1.0 | 自動更新每 30 秒</p>
+  </div>
+</div>
+
+<script>
+let refreshInterval;
+
+async function loadStats() {
+  try {
+    // 載入統計數據
+    const statsRes = await fetch('/api/stats');
+    const statsData = await statsRes.json();
+    
+    if (statsData.success) {
+      // 更新總訪客數
+      document.getElementById('totalVisits').textContent = statsData.total || 0;
+      
+      // 計算今日訪客
+      let todayCount = 0;
+      let healthCount = 0;
+      let businessCount = 0;
+      
+      for (const [key, count] of Object.entries(statsData.stats)) {
+        if (key.includes('page_view')) {
+          todayCount += count;
+        }
+        if (key.includes('|health')) {
+          healthCount += count;
+        }
+        if (key.includes('|business')) {
+          businessCount += count;
+        }
+      }
+      
+      document.getElementById('todayVisits').textContent = todayCount;
+      document.getElementById('healthVisits').textContent = healthCount;
+      document.getElementById('businessVisits').textContent = businessCount;
+      
+      // 更新表格
+      const tableBody = document.getElementById('statsTable');
+      tableBody.innerHTML = '';
+      
+      const sortedStats = Object.entries(statsData.stats)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 20);
+      
+      for (const [key, count] of sortedStats) {
+        const [event, source, medium] = key.split('|');
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><span class="badge info">${event}</span></td>
+          <td>${source}</td>
+          <td>${medium}</td>
+          <td><strong>${count}</strong></td>
+          <td><span class="badge success">正常</span></td>
+        `;
+        tableBody.appendChild(row);
+      }
+      
+      if (sortedStats.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">尚無數據</td></tr>';
+      }
+    }
+  } catch (err) {
+    console.error('載入統計失敗:', err);
+    document.getElementById('statsTable').innerHTML = 
+      '<tr><td colspan="5" style="text-align: center; color: #f44336;">載入失敗，請稍後再試</td></tr>';
+  }
+}
+
+// 自動重新整理
+function startAutoRefresh() {
+  refreshInterval = setInterval(loadStats, 30000); // 每 30 秒
+}
+
+// 頁面載入時執行
+loadStats();
+startAutoRefresh();
+</script>
+</body>
+</html>
