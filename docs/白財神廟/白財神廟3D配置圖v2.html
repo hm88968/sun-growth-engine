@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>白財神廟 · 3D配置圖 v2</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+    background: linear-gradient(180deg, #b8d4e8 0%, #e8dfd0 40%, #d4c4a0 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #2c1810;
+    overflow-x: hidden;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .header h1 {
+    font-size: 28px;
+    color: #4a3020;
+    text-shadow: 0 2px 4px rgba(255,255,255,0.5);
+    letter-spacing: 2px;
+  }
+  .header .meta {
+    font-size: 13px;
+    color: #6b5a4a;
+    margin-top: 6px;
+  }
+  .controls {
+    text-align: center;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 8px 18px;
+    background: rgba(255,255,255,0.7);
+    border: 2px solid #c8a96e;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #5c3d2e;
+    transition: all 0.3s;
+    font-family: inherit;
+  }
+  .btn:hover {
+    background: #c8a96e;
+    color: white;
+  }
+  .btn.active {
+    background: #5c3d2e;
+    color: white;
+    border-color: #5c3d2e;
+  }
+
+  /* 3D舞台 */
+  .stage {
+    perspective: 1400px;
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto 30px;
+    height: 600px;
+    position: relative;
+  }
+  .scene {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(60deg) rotateZ(-45deg);
+    transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .scene.view-top { transform: rotateX(75deg) rotateZ(0deg); }
+  .scene.view-front { transform: rotateX(45deg) rotateZ(0deg); }
+  .scene.view-side { transform: rotateX(60deg) rotateZ(-90deg); }
+  .scene.view-iso { transform: rotateX(60deg) rotateZ(-45deg); }
+
+  /* 地面 */
+  .ground {
+    position: absolute;
+    width: 700px;
+    height: 600px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) translateZ(-2px);
+    background: linear-gradient(135deg, #d4c4a0 0%, #e8d5b0 50%, #c8a96e 100%);
+    border: 3px solid #b89560;
+    border-radius: 8px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+  }
+  .ground::before {
+    content: "";
+    position: absolute;
+    inset: 15px;
+    border: 2px dashed rgba(139, 94, 60, 0.3);
+    border-radius: 4px;
+  }
+  .ground::after {
+    content: "202.6 坪（674㎡）";
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
+    font-size: 12px;
+    color: #8b5e3c;
+    font-weight: bold;
+    background: rgba(255,255,255,0.6);
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+
+  /* 方向標示 */
+  .compass {
+    position: absolute;
+    top: -40px;
+    right: -30px;
+    width: 70px;
+    height: 70px;
+    background: rgba(255,255,255,0.8);
+    border-radius: 50%;
+    border: 2px solid #c8a96e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: #5c3d2e;
+    z-index: 10;
+  }
+  .compass::before {
+    content: "N";
+    position: absolute;
+    top: 5px;
+    color: #e74c3c;
+    font-size: 14px;
+  }
+
+  /* 建物通用 */
+  .building {
+    position: absolute;
+    transform-style: preserve-3d;
+    cursor: pointer;
+    transition: filter 0.3s;
+  }
+  .building:hover {
+    filter: brightness(1.1);
+  }
+  .building .face {
+    position: absolute;
+    backface-visibility: hidden;
+  }
+
+  /* 廟宇主體 - 白財神廟 */
+  .temple {
+    left: 240px;
+    top: 100px;
+    width: 200px;
+    height: 160px;
+  }
+  .temple .roof {
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    left: -10px;
+    top: -80px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f4e8 30%, #e8dcc0 100%);
+    clip-path: polygon(50% 0%, 5% 85%, 95% 85%);
+    transform: translateZ(45px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    border: 1px solid #d4c4a0;
+  }
+  .temple .roof::before {
+    content: "☀️";
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 36px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  }
+  .temple .roof::after {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 3px;
+    background: #c8a96e;
+    border-radius: 2px;
+  }
+  .temple .wall {
+    position: absolute;
+    width: 200px;
+    height: 110px;
+    left: 0;
+    top: 40px;
+    background: linear-gradient(180deg, #fffff8 0%, #f8f2e0 50%, #f0e8d0 100%);
+    border: 2px solid #d4c4a0;
+    transform: translateZ(22px);
+    box-shadow: inset 0 0 30px rgba(200,169,110,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .temple .wall::before {
+    content: "白財神廟";
+    font-size: 20px;
+    font-weight: bold;
+    color: #4a3020;
+    letter-spacing: 4px;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+  }
+  .temple .base {
+    position: absolute;
+    width: 200px;
+    height: 110px;
+    left: 0;
+    top: 40px;
+    background: linear-gradient(135deg, #d4b896 0%, #c8a96e 50%, #b89560 100%);
+    transform: translateZ(0px);
+    border-radius: 3px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+  .temple .pillar-left, .temple .pillar-right {
+    position: absolute;
+    width: 12px;
+    height: 45px;
+    background: linear-gradient(90deg, #8b5e3c, #a0784c);
+    top: 45px;
+    transform: translateZ(22px);
+    border-radius: 2px;
+  }
+  .temple .pillar-left { left: 15px; }
+  .temple .pillar-right { right: 15px; }
+
+  /* 鹽療館 */
+  .salt-therapy {
+    left: 40px;
+    top: 100px;
+    width: 160px;
+    height: 120px;
+  }
+  .salt-therapy .roof {
+    position: absolute;
+    width: 170px;
+    height: 170px;
+    left: -5px;
+    top: -60px;
+    background: linear-gradient(135deg, #e8f4f8 0%, #c8dce0 50%, #a8c0c4 100%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    transform: translateZ(30px);
+    border: 1px solid #98b8bc;
+  }
+  .salt-therapy .roof::before {
+    content: "🧂";
+    position: absolute;
+    top: 45px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+  }
+  .salt-therapy .wall {
+    position: absolute;
+    width: 160px;
+    height: 90px;
+    left: 0;
+    top: 25px;
+    background: linear-gradient(180deg, #f8fcfd 0%, #e0e8ea 100%);
+    border: 2px solid #a0b8bc;
+    transform: translateZ(15px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .salt-therapy .wall::before {
+    content: "鹽療體驗館";
+    font-size: 15px;
+    color: #3c5a56;
+    font-weight: bold;
+  }
+  .salt-therapy .base {
+    position: absolute;
+    width: 160px;
+    height: 90px;
+    left: 0;
+    top: 25px;
+    background: linear-gradient(135deg, #a0c4b8 0%, #88a8a0 100%);
+    transform: translateZ(0);
+    border-radius: 3px;
+  }
+
+  /* 餐飲 */
+  .dining {
+    left: 420px;
+    top: 100px;
+    width: 140px;
+    height: 100px;
+  }
+  .dining .roof {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    left: -5px;
+    top: -55px;
+    background: linear-gradient(135deg, #fff8e8 0%, #f0d8a8 50%, #e0c080 100%);
+    clip-path: polygon(50% 0%, 5% 85%, 95% 85%);
+    transform: translateZ(28px);
+    border: 1px solid #d4b880;
+  }
+  .dining .roof::before {
+    content: "🍽";
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 26px;
+  }
+  .dining .wall {
+    position: absolute;
+    width: 140px;
+    height: 80px;
+    left: 0;
+    top: 25px;
+    background: linear-gradient(180deg, #fffff5 0%, #f8ecd8 100%);
+    border: 2px solid #d4b880;
+    transform: translateZ(14px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .dining .wall::before {
+    content: "鹽供餐飲";
+    font-size: 15px;
+    color: #6b4420;
+    font-weight: bold;
+  }
+  .dining .base {
+    position: absolute;
+    width: 140px;
+    height: 80px;
+    left: 0;
+    top: 25px;
+    background: linear-gradient(135deg, #d4b880 0%, #c4a060 100%);
+    transform: translateZ(0);
+    border-radius: 3px;
+  }
+
+  /* 太陽能涼亭 */
+  .solar {
+    left: 380px;
+    top: 260px;
+    width: 120px;
+    height: 80px;
+  }
+  .solar .roof {
+    position: absolute;
+    width: 130px;
+    height: 100px;
+    left: -5px;
+    top: -20px;
+    background: linear-gradient(135deg, #1a3a5c 0%, #2c5a8c 50%, #1a4060 100%);
+    transform: translateZ(22px) rotateX(-8deg);
+    border-radius: 4px;
+    border: 2px solid #0a2030;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .solar .roof::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 8px,
+      rgba(100, 180, 255, 0.2) 8px,
+      rgba(100, 180, 255, 0.2) 10px
+    );
+  }
+  .solar .roof::after {
+    content: "⚡";
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+  }
+  .solar .pillar {
+    position: absolute;
+    width: 6px;
+    height: 45px;
+    background: linear-gradient(90deg, #777, #999, #777);
+    left: 20px;
+    top: 30px;
+    transform: translateZ(11px);
+    border-radius: 2px;
+  }
+  .solar .pillar.right { left: 94px; }
+  .solar .base {
+    position: absolute;
+    width: 120px;
+    height: 80px;
+    left: 0;
+    top: 30px;
+    background: #b89560;
+    transform: translateZ(0);
+    border-radius: 3px;
+  }
+
+  /* 停車場 */
+  .parking {
+    left: 60px;
+    top: 260px;
+    width: 180px;
+    height: 130px;
+    background: linear-gradient(135deg, #909090 0%, #808080 100%);
+    border: 2px solid #606060;
+    transform: translateZ(2px);
+    border-radius: 6px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+  .parking::before {
+    content: "🅿️";
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-size: 18px;
+  }
+  .parking::after {
+    content: "";
+    position: absolute;
+    width: 85%;
+    height: 55%;
+    top: 25%;
+    left: 8%;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 12px,
+      #aaa 12px,
+      #aaa 16px
+    );
+    border: 1px solid #666;
+  }
+
+  /* 廟埕廣場 */
+  .plaza {
+    left: 280px;
+    top: 300px;
+    width: 180px;
+    height: 140px;
+    background: linear-gradient(135deg, #e8dcc8 0%, #d8c8a8 100%);
+    border: 2px solid #c8a96e;
+    transform: translateZ(1px);
+    border-radius: 6px;
+  }
+  .plaza::before {
+    content: "🏛 廟埕廣場";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    color: #6b5a4a;
+    font-weight: bold;
+  }
+
+  /* 入口 */
+  .entrance {
+    left: 460px;
+    top: 430px;
+    width: 110px;
+    height: 60px;
+    background: linear-gradient(135deg, #f5f0e0 0%, #e8dcc0 100%);
+    border: 2px solid #c8a96e;
+    transform: translateZ(1px);
+    border-radius: 6px;
+  }
+  .entrance::before {
+    content: "🚪 淨化之門";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 13px;
+    color: #6b5a4a;
+    font-weight: bold;
+  }
+
+  /* 鹽田意象 */
+  .salt-field {
+    left: 20px;
+    top: 430px;
+    width: 200px;
+    height: 100px;
+    background: linear-gradient(135deg, #d0e8e0 0%, #b8d4c8 100%);
+    border: 2px solid #98b8a8;
+    transform: translateZ(1px);
+    border-radius: 6px;
+  }
+  .salt-field::before {
+    content: "🧂 鹽田景觀";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 13px;
+    color: #3c5a4e;
+    font-weight: bold;
+  }
+
+  /* 冥想平台 */
+  .meditation {
+    left: 280px;
+    top: 460px;
+    width: 140px;
+    height: 70px;
+    background: radial-gradient(circle, #d4c4a0 0%, #c0a880 100%);
+    border: 2px solid #a89070;
+    transform: translateZ(3px);
+    border-radius: 50%;
+  }
+  .meditation::before {
+    content: "🧘 冥想海岸";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    color: #4a3020;
+    font-weight: bold;
+  }
+
+  /* 景觀樹 */
+  .tree {
+    position: absolute;
+    transform-style: preserve-3d;
+  }
+  .tree .trunk {
+    position: absolute;
+    width: 8px;
+    height: 25px;
+    background: linear-gradient(90deg, #8b5e3c, #a0784c);
+    transform: translateZ(15px);
+    border-radius: 2px;
+  }
+  .tree .leaves {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: radial-gradient(circle, #4a8c3f 0%, #2c6028 100%);
+    border-radius: 50%;
+    transform: translateZ(30px);
+    left: -11px;
+    top: -25px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  }
+
+  /* 標籤面板 */
+  .info-panel {
+    max-width: 1000px;
+    margin: 0 auto 30px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid rgba(200,169,110,0.3);
+  }
+  .info-title {
+    font-size: 18px;
+    color: #4a3020;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #c8a96e;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+  }
+  .info-card {
+    background: linear-gradient(135deg, #fff 0%, #f8f2e0 100%);
+    border-left: 4px solid #c8a96e;
+    padding: 14px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    transition: all 0.3s;
+  }
+  .info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .info-card .icon {
+    font-size: 24px;
+    margin-bottom: 6px;
+  }
+  .info-card .name {
+    font-size: 15px;
+    font-weight: bold;
+    color: #4a3020;
+    margin-bottom: 4px;
+  }
+  .info-card .desc {
+    font-size: 12px;
+    color: #8a7260;
+    line-height: 1.5;
+  }
+
+  /* 流程 */
+  .flow {
+    max-width: 1000px;
+    margin: 0 auto 30px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid rgba(200,169,110,0.3);
+  }
+  .flow-title {
+    font-size: 18px;
+    color: #4a3020;
+    margin-bottom: 16px;
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #c8a96e;
+  }
+  .flow-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .flow-step {
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+    position: relative;
+  }
+  .flow-step .circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #c8a96e, #e8d5a0);
+    margin: 0 auto 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 3px solid white;
+  }
+  .flow-step .step-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: #4a3020;
+    margin-bottom: 2px;
+  }
+  .flow-step .step-desc {
+    font-size: 11px;
+    color: #8a7260;
+  }
+  .flow-arrow {
+    font-size: 22px;
+    color: #c8a96e;
+    font-weight: bold;
+    flex: 0 0 30px;
+  }
+
+  /* 數據面板 */
+  .stats-bar {
+    max-width: 1000px;
+    margin: 0 auto 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .stat-item {
+    background: rgba(255,255,255,0.9);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    border-top: 3px solid #c8a96e;
+  }
+  .stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #4a3020;
+    margin-bottom: 4px;
+  }
+  .stat-label {
+    font-size: 12px;
+    color: #8a7260;
+  }
+
+  /* 剖面圖 */
+  .section-view {
+    max-width: 1000px;
+    margin: 0 auto 30px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid rgba(200,169,110,0.3);
+  }
+  .section-title {
+    font-size: 18px;
+    color: #4a3020;
+    margin-bottom: 16px;
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #c8a96e;
+  }
+  .section-diagram {
+    width: 100%;
+    height: 220px;
+    background: linear-gradient(180deg, 
+      #87CEEB 0%, #87CEEB 20%,
+      #f5f0e0 20%, #f5f0e0 40%,
+      #e8d5b0 40%, #c8a96e 70%,
+      #a08060 70%, #806040 100%
+    );
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid #d4c4a0;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+  }
+  .section-layer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    font-size: 13px;
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  }
+  .layer-sky { top: 0; height: 20%; background: rgba(135,206,235,0.2); color: #4a6fa5; }
+  .layer-roof { top: 20%; height: 10%; background: rgba(255,255,255,0.7); color: #5c3d2e; border-top: 2px solid #d4c4a0; }
+  .layer-wall { top: 30%; height: 15%; background: rgba(245,240,224,0.8); color: #5c3d2e; border-top: 1px solid #c8a96e; }
+  .layer-floor { top: 45%; height: 8%; background: rgba(200,169,110,0.6); color: #fff; }
+  .layer-ground { top: 53%; height: 47%; background: rgba(160,128,96,0.5); color: #fff; }
+  .section-labels {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #6b5a4a;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .section-labels span {
+    background: #f8f2e0;
+    padding: 4px 10px;
+    border-radius: 12px;
+    border: 1px solid #e8d5b0;
+  }
+
+  .footer-note {
+    text-align: center;
+    font-size: 11px;
+    color: #8a7260;
+    margin-top: 20px;
+    padding: 12px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 8px;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* tooltip */
+  .tooltip {
+    position: fixed;
+    background: rgba(74, 48, 32, 0.95);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 1000;
+    max-width: 220px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip .tt-title {
+    font-weight: bold;
+    margin-bottom: 4px;
+    font-size: 14px;
+  }
+  .tooltip .tt-desc {
+    font-size: 12px;
+    color: #e8d5b0;
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 10px; }
+    .header h1 { font-size: 22px; }
+    .stage { height: 400px; }
+    .scene { transform: rotateX(60deg) rotateZ(-45deg) scale(0.8); }
+    .info-grid { grid-template-columns: 1fr; }
+    .flow-steps { gap: 5px; }
+    .flow-arrow { flex: 0 0 15px; font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏛 白財神廟 · 3D配置圖 v2</h1>
+  <div class="meta">台南市七股區 下庄子寮段 123地號 ｜ 鄉村區 · 特定目的事業用地 ｜ 方案B：廟 + 體驗經濟</div>
+</div>
+
+<div class="controls">
+  <button class="btn active" onclick="setView('iso', this)">等距視角</button>
+  <button class="btn" onclick="setView('top', this)">俯視圖</button>
+  <button class="btn" onclick="setView('front', this)">正面圖</button>
+  <button class="btn" onclick="setView('side', this)">側面圖</button>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-value">202.6 坪</div>
+    <div class="stat-label">總面積（674㎡）</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-value">8 設施</div>
+    <div class="stat-label">規劃項目</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-value">20 年</div>
+    <div class="stat-label">太陽能合約</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-value">2000 元/㎡</div>
+    <div class="stat-label">地價估算</div>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="scene" id="scene">
+    <div class="ground"></div>
+    <div class="compass">N</div>
+
+    <!-- 廟宇主體 -->
+    <div class="building temple" data-info="temple">
+      <div class="roof"></div>
+      <div class="pillar-left"></div>
+      <div class="pillar-right"></div>
+      <div class="wall"></div>
+      <div class="base"></div>
+    </div>
+
+    <!-- 鹽療館 -->
+    <div class="building salt-therapy" data-info="salt">
+      <div class="roof"></div>
+      <div class="wall"></div>
+      <div class="base"></div>
+    </div>
+
+    <!-- 餐飲 -->
+    <div class="building dining" data-info="dining">
+      <div class="roof"></div>
+      <div class="wall"></div>
+      <div class="base"></div>
+    </div>
+
+    <!-- 太陽能涼亭 -->
+    <div class="building solar" data-info="solar">
+      <div class="roof"></div>
+      <div class="pillar"></div>
+      <div class="pillar right"></div>
+      <div class="base"></div>
+    </div>
+
+    <!-- 停車場 -->
+    <div class="building parking" data-info="parking"></div>
+
+    <!-- 廟埕廣場 -->
+    <div class="building plaza" data-info="plaza"></div>
+
+    <!-- 入口 -->
+    <div class="building entrance" data-info="entrance"></div>
+
+    <!-- 鹽田意象 -->
+    <div class="building salt-field" data-info="saltfield"></div>
+
+    <!-- 冥想平台 -->
+    <div class="building meditation" data-info="meditation"></div>
+
+    <!-- 景觀樹 -->
+    <div class="tree" style="left: 220px; top: 60px;">
+      <div class="leaves"></div>
+      <div class="trunk"></div>
+    </div>
+    <div class="tree" style="left: 320px; top: 50px;">
+      <div class="leaves"></div>
+      <div class="trunk"></div>
+    </div>
+    <div class="tree" style="left: 580px; top: 70px;">
+      <div class="leaves"></div>
+      <div class="trunk"></div>
+    </div>
+    <div class="tree" style="left: 120px; top: 220px;">
+      <div class="leaves"></div>
+      <div class="trunk"></div>
+    </div>
+    <div class="tree" style="left: 500px; top: 230px;">
+      <div class="leaves"></div>
+      <div class="trunk"></div>
+    </div>
+  </div>
+</div>
+
+<div class="info-panel">
+  <div class="info-title">📋 設施一覽</div>
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="icon">🏛</div>
+      <div class="name">白財神廟</div>
+      <div class="desc">主體建築 80-120坪<br/>鹽山意象屋頂<br/>朝聖核心</div>
+    </div>
+    <div class="info-card">
+      <div class="icon">🧂</div>
+      <div class="name">鹽療體驗館</div>
+      <div class="desc">鹽室、頌缽、鹽燈<br/>室內淨化體驗<br/>心靈療癒</div>
+    </div>
+    <div class="info-card">
+      <div class="icon">🍽</div>
+      <div class="name">鹽供餐飲</div>
+      <div class="desc">素食餐廳<br/>淨化意涵料理<br/>在地食材</div>
+    </div>
+    <div class="info-card">
+      <div class="icon">☀️</div>
+      <div class="name">太陽能涼亭</div>
+      <div class="desc">屋頂光電<br/>穩定售電收益<br/>20年合約</div>
+    </div>
+    <div class="info-card">
+      <div class="icon">🅿️</div>
+      <div class="name">停車場</div>
+      <div class="desc">香客/遊客停車<br/>30-50輛<br/>完善的動線</div>
+    </div>
+    <div class="info-card">
+      <div class="icon">🏛</div>
+      <div class="name">廟埕廣場</div>
+      <div class="desc">法會、活動空間<br/>朝聖緩衝區<br/>戶外聚會</div>
+    </div>
+    <div class="info-card">
+      <div class="icon">🚪</div>
+      <div class="name">淨化之門</div>
+      <div class="desc">鹽水足浴淨化<br/>儀式感的進入<br/>身心準備</div>
+    </div>
+    <div class="info-card">
+      <div class="icon">🧂</div>
+      <div class="name">鹽田景觀</div>
+      <div class="desc">景觀水景<br/>結晶模擬<br/>拍照亮點</div>
+    </div>
+    <div class="info-card">
+      <div class="icon">🧘</div>
+      <div class="name">冥想海岸</div>
+      <div class="desc">面向海岸<br/>鹽的靈性空間<br/>靜心冥想</div>
+    </div>
+  </div>
+</div>
+
+<div class="flow">
+  <div class="flow-title">🛤 朝聖路徑：從淨化到覺醒</div>
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="circle">🚿</div>
+      <div class="step-name">洗淨之門</div>
+      <div class="step-desc">鹽水足浴</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="circle">🚶</div>
+      <div class="step-name">淨身之道</div>
+      <div class="step-desc">鹽雕步道</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="circle">🙏</div>
+      <div class="step-name">療癒之堂</div>
+      <div class="step-desc">白財神廟</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="circle">🌊</div>
+      <div class="step-name">覺醒之庭</div>
+      <div class="step-desc">冥想海岸</div>
+    </div>
+  </div>
+</div>
+
+<div class="section-view">
+  <div class="section-title">📐 建築剖面示意</div>
+  <div class="section-diagram">
+    <div class="section-layer layer-sky">天空</div>
+    <div class="section-layer layer-roof">鹽山意象屋頂（白色太陽能板）</div>
+    <div class="section-layer layer-wall">廟堂堂身 + 鹽燈供養</div>
+    <div class="section-layer layer-floor">地板 + 階梯</div>
+    <div class="section-layer layer-ground">基礎層 · 停車場 · 鹽田意象地景</div>
+  </div>
+  <div class="section-labels">
+    <span>☀️ 屋頂光電（鹽晶體板）</span>
+    <span>🧂 鹽雕/鹽燈主體</span>
+    <span>🏛 信仰空間</span>
+    <span>🌿 地景融合</span>
+  </div>
+</div>
+
+<div class="footer-note">
+  3D配置圖為概念示意，實際規劃需經建築師設計、都市計畫審查、地政事務所測量後確定 ｜ 資料來源：內政部國土測繪圖資服務雲
+</div>
+
+<div class="tooltip" id="tooltip">
+  <div class="tt-title"></div>
+  <div class="tt-desc"></div>
+</div>
+
+<script>
+  const infoData = {
+    temple: { title: '🏛 白財神廟', desc: '主體建築 80-120坪，鹽山意象屋頂，朝聖核心。象徵財富與淨化。' },
+    salt: { title: '🧂 鹽療體驗館', desc: '鹽室、頌缽、鹽燈，室內淨化體驗。利用喜馬拉雅鹽的自然療癒效果。' },
+    dining: { title: '🍽 鹽供餐飲', desc: '素食餐廳，淨化意涵料理。使用在地食材，強調健康與靈性。' },
+    solar: { title: '☀️ 太陽能涼亭', desc: '屋頂光電，穩定售電收益。20年台電收購合約，被動收入來源。' },
+    parking: { title: '🅿️ 停車場', desc: '香客/遊客停車，30-50輛。完善的動線設計，確保出入順暢。' },
+    plaza: { title: '🏛 廟埕廣場', desc: '法會、活動空間，朝聖緩衝區。可容納大型戶外聚會。' },
+    entrance: { title: '🚪 淨化之門', desc: '鹽水足浴淨化，儀式感的進入。讓來訪者身心準備。' },
+    saltfield: { title: '🧂 鹽田景觀', desc: '景觀水景，結晶模擬。七股鹽鄉特色的現代詮釋。' },
+    meditation: { title: '🧘 冥想海岸', desc: '面向海岸，鹽的靈性空間。適合靜心冥想與海岸散步。' }
+  };
+
+  function setView(view, btn) {
+    const scene = document.getElementById('scene');
+    scene.className = 'scene view-' + view;
+    document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // Tooltip
+  const tooltip = document.getElementById('tooltip');
+  document.querySelectorAll('.building').forEach(el => {
+    el.addEventListener('mousemove', e => {
+      const key = el.dataset.info;
+      if (infoData[key]) {
+        tooltip.querySelector('.tt-title').textContent = infoData[key].title;
+        tooltip.querySelector('.tt-desc').textContent = infoData[key].desc;
+        tooltip.style.left = (e.clientX + 15) + 'px';
+        tooltip.style.top = (e.clientY + 15) + 'px';
+        tooltip.classList.add('show');
+      }
+    });
+    el.addEventListener('mouseleave', () => {
+      tooltip.classList.remove('show');
+    });
+  });
+
+  // 自動旋轉（可選）
+  let autoRotate = false;
+  let angle = -45;
+  setInterval(() => {
+    if (!autoRotate) return;
+    angle = (angle + 0.3) % 360;
+    document.getElementById('scene').style.transform = `rotateX(60deg) rotateZ(${angle}deg)`;
+  }, 50);
+
+  document.querySelector('.stage').addEventListener('click', e => {
+    if (e.target.closest('.building')) return;
+    autoRotate = !autoRotate;
+  });
+</script>
+
+</body>
+</html>
